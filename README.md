@@ -136,13 +136,8 @@ flowchart TD
 
 ---
 
-## 📸 Screenshot
-> _(Tambahkan screenshot tampilan dashboard guru, siswa, dan halaman ujian di sini)_
-
----
-
 ## 🧑‍💻 Kontributor
-- **Dani @Teknik Comp** – Pengembang & Desain Sistem
+- **Daniekmz** – Pengembang & Desain Sistem
 
 ---
 
