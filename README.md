@@ -1,4 +1,4 @@
-# SMK-e-Learning-Exam-Management-System-
+# SMK-e-Learning-Exam-Management-System- Berbasis html, javascript
 # 📚 SMK Veteran 1 Sukoharjo – Manajemen Materi, Tugas & Ujian
 
 Aplikasi berbasis web untuk **manajemen materi, tugas, dan ujian** antara guru dan siswa di SMK Veteran 1 Sukoharjo.  
