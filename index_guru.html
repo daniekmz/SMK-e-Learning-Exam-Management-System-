@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MANAJEMEN TUGAS, MATERI DAN SOAL</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="gambar/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="gambar/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="gambar/favicon-16x16.png">
+    <link rel="manifest" href="gambar/site.webmanifest">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/link-preview-js@2.1.15/dist/linkPreview.min.js"></script>
+</head>
+<body class="dark-mode">
+    <div class="school-theme-bg"></div>
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <img src="gambar/favicon-32x32.png" alt="School Logo" class="school-logo">
+                <div class="logo-text">
+                    <span class="school-name">SMK Veteran 1 Sukoharjo</span>
+                    <span class="school-motto">Bersatu Maju Nomer 1</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <h1>Manajemen Tugas & Materi</h1>
+                <div class="class-info">
+                    <span>Tahun Ajaran 2025/2026</span>
+                    <span>Mode: Guru</span>
+                </div>
+            </div>
+            <div class="user-controls">
+                <button id="theme-toggle" class="btn-icon">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button id="settings-btn" class="btn-icon" title="Pengaturan">
+                    <i class="fas fa-cog"></i>
+                </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+<nav class="teacher-nav">
+    <div class="nav-container">
+        <button class="nav-btn active" id="tugas-btn">
+            <i class="fas fa-tasks"></i> Tugas
+        </button>
+        <button class="nav-btn" id="soal-btn">
+            <i class="fas fa-book"></i> Manajemen Soal
+        </button>
+        <button class="nav-btn" id="game-btn">
+            <i class="fas fa-gamepad"></i> Puzzle Game ( soon 😊)
+        </button>
+        <button class="nav-btn" id="nilai-btn">
+            <i class="fas fa-chart-bar"></i> Nilai Siswa 
+        </button>
+    </div>
+</nav>
+
+    <main class="main-content" id="tugas-section">
+        <div class="file-manager-container">
+            <!-- File Manager Header -->
+            <div class="file-manager-header">
+                <div class="breadcrumb">
+                    <div id="breadcrumb-path"></div>
+                </div>
+                <div class="file-actions-header">
+                    <div class="file-stats">
+                        <span id="file-count">0 file</span>
+                        <span id="folder-count">0 folder</span>
+                    </div>
+                    <button id="create-folder-btn" class="btn primary">
+                        <i class="fas fa-folder-plus"></i> Folder Baru
+                    </button>
+                    <button id="upload-file-btn" class="btn primary">
+                        <i class="fas fa-upload"></i> Unggah File
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upload Box -->
+            <div class="upload-box" id="drop-zone" style="display: none;">
+                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                <p class="upload-text">Seret & lepas file atau <span class="browse-link">cari file</span></p>
+                <input type="file" id="file-upload" multiple>
+                <div class="upload-progress">
+                    <div class="progress-bar"></div>
+                    <span class="progress-text">0%</span>
+                </div>
+                <div class="upload-tips">
+                    <i class="fas fa-lightbulb"></i> Format file: PDF, DOCX, PPTX, ZIP (Maks. 50MB)
+                </div>
+            </div>
+
+            <!-- File List -->
+            <div id="file-list" class="file-list">
+                <!-- Files and folders will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <main class="main-content" id="soal-section" style="display: none;">
+        <div class="exam-management-container">
+            <div class="exam-management-header">
+                <h2><i class="fas fa-clipboard-list"></i> Manajemen Soal 📖</h2>
+                <div class="exam-management-buttons">
+                    <button id="create-exam-btn" class="btn primary">
+                        <i class="fas fa-plus"></i> Buat Ujian Baru
+                    </button>
+                    <a href="#" id="download-template-link" class="btn primary">
+                        <i class="fas fa-file-download"></i> Download Template Untuk Import Soal
+                    </a>
+                    <button id="import-exam-btn" class="btn primary">
+                        <i class="fas fa-file-import"></i> Import Soal
+                    </button>
+                </div>
+            </div>
+            </div>
+            
+            <!-- Import Exam Modal -->
+            <div id="import-exam-modal" class="modal wide-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-file-import"></i> Import Soal dari File</h3>
+                        <button class="modal-close" id="close-import-modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Inside the import-exam-modal -->
+                                                <div class="class-selection-container">
+                            <div class="class-selection-header">
+                                <span>Daftar Kelas</span>
+                                <button id="import-add-class-btn" class="btn-icon">
+                                    <i class="fas fa-plus"></i> 
+                                </button>
+                                <button id="import-refresh-classes-btn" class="btn-icon" title="Refresh Daftar Kelas">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                            <div class="class-list">
+                                <table class="class-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="40px">
+                                                <input type="checkbox" id="select-all-classes">
+                                            </th>
+                                            <th>Nama Kelas</th>
+                                            <th width="100px">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="import-class-checkboxes">
+                                        <!-- Classes will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                        <label for="import-exam-title">Judul Ujian</label>
+                        <input type="text" id="import-exam-title" class="modal-input" placeholder="Masukkan judul ujian" required>
+                    </div>
+
+                        <div class="form-group">
+                            <label for="import-exam-description">Deskripsi Ujian</label>
+                            <textarea id="import-exam-description" class="modal-input" rows="3" placeholder="Deskripsi ujian (opsional)"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="import-exam-duration">Durasi (menit)</label>
+                            <input type="number" id="import-exam-duration" class="modal-input" min="5" max="180" value="60">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="import-file-type">Format File</label>
+                            <select id="import-file-type" class="modal-input">
+                                <option value="csv">CSV</option>
+                                <option value="excel">Excel (XLSX)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Inside the import-exam-modal -->
+                        <div class="upload-box" id="import-drop-zone">
+                        <div class="upload-content">
+                            <i class="fas fa-file-import upload-icon"></i>
+                            <p class="upload-text">Seret & lepas file Excel/CSV di sini atau <span class="browse-link" id="import-browse-link">cari file</span></p>
+                            <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" style="display: none;">
+                        </div>
+                        <div class="upload-tips">
+                            <i class="fas fa-lightbulb"></i> 
+                            <span>Format file: Excel (.xlsx, .xls) atau CSV (.csv)</span>
+                            <br>
+                            <span>Download template di samping tombol import</span>
+                        </div>
+                    </div>
+                        <div class="form-group" id="column-mapping-section" style="display: none;">
+                            <h4>Pemetaan Kolom</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="map-question">Kolom Pertanyaan</label>
+                                    <select id="map-question" class="modal-input">
+                                        <option value="">-- Pilih Kolom --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="map-type">Kolom Tipe Soal</label>
+                                    <select id="map-type" class="modal-input">
+                                        <option value="">-- Pilih Kolom --</option>
+                                        <option value="fixed" selected>Tetap: Pilihan Ganda</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="map-option-a">Kolom Opsi A</label>
+                                    <select id="map-option-a" class="modal-input">
+                                        <option value="">-- Pilih Kolom --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="map-option-b">Kolom Opsi B</label>
+                                    <select id="map-option-b" class="modal-input">
+                                        <option value="">-- Pilih Kolom --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="map-option-c">Kolom Opsi C</label>
+                                    <select id="map-option-c" class="modal-input">
+                                        <option value="">-- Pilih Kolom --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="map-option-d">Kolom Opsi D</label>
+                                    <select id="map-option-d" class="modal-input">
+                                        <option value="">-- Pilih Kolom --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="map-correct-answer">Kolom Jawaban Benar</label>
+                                    <select id="map-correct-answer" class="modal-input">
+                                        <option value="">-- Pilih Kolom --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="map-points">Kolom Poin</label>
+                                    <select id="map-points" class="modal-input">
+                                        <option value="">-- Pilih Kolom --</option>
+                                        <option value="fixed" selected>Tetap: 5</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="import-preview" style="display: none; margin-top: 20px;">
+                            <h4>Pratinjau Soal</h4>
+                            <div class="preview-table-container" style="max-height: 300px; overflow-y: auto;">
+                                <table class="class-table" id="import-preview-table">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Pertanyaan</th>
+                                            <th>Opsi A</th>
+                                            <th>Opsi B</th>
+                                            <th>Opsi C</th>
+                                            <th>Opsi D</th>
+                                            <th>Jawaban</th>
+                                            <th>Poin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div id="import-validation" class="mt-3"></div>
+                        </div>
+                        
+                        <p id="import-error" class="error-message"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="cancel-import-btn" class="btn secondary">Batal</button>
+                        <button id="confirm-import-btn" class="btn primary" disabled>Import Soal</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exam-list" id="teacher-exam-list">
+                <!-- Exams will be loaded here -->
+                <div class="no-exams">
+                    <i class="fas fa-clipboard-question"></i>
+                    <p>Belum ada ujian yang dibuat</p>
+                    <button id="create-first-exam-btn" class="btn primary">
+                        <i class="fas fa-plus"></i> Buat Ujian Pertama
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main class="main-content" id="nilai-section" style="display: none;">
+        <div class="grades-container">
+            <div class="grades-header">
+                <h2><i class="fas fa-chart-bar"></i> Hasil Ujian Siswa</h2>
+                <div class="grades-filter">
+                    <select id="exam-filter" class="modal-input">
+                        <option value="">Pilih Ujian</option>
+                    </select>
+                    <select id="class-filter" class="modal-input">
+                        <option value="">Pilih Kelas</option>
+                    </select>
+                    <button id="export-grades-btn" class="btn primary">
+                        <i class="fas fa-file-export"></i> Ekspor Nilai
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grades-list" id="grades-list">
+                <!-- Grades will be loaded here -->
+                <div class="no-grades">
+                    <i class="fas fa-user-graduate"></i>
+                    <p>Pilih ujian dan kelas untuk melihat hasil</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-logo">
+                <img src="gambar/favicon-32x32.png" alt="School Logo" class="school-logo-small">
+                <div class="footer-school-info">
+                    <p>SMK Veteran 1 Sukoharjo</p>
+                    <p>Jl. Calen 1, Sukoharjo, Jawa Tengah</p>
+                </div>
+            </div>
+            <div class="footer-links">
+                <a href="#"><i class="fas fa-envelope"></i> Kontak</a>
+                <a href="#"><i class="fas fa-info-circle"></i> Tentang</a>
+                <a href="#"><i class="fas fa-shield-alt"></i> Kebijakan</a>
+            </div>
+        </div>
+        <div class="footer-copyright">
+            <p>&copy; 2025 SMK Veteran 1 Sukoharjo. All rights reserved ©By Dani @Teknik Comp</p>
+        </div>
+    </footer>
+
+    <!-- Create Folder Modal -->
+    <div id="create-folder-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-folder-plus"></i> Buat Folder Baru</h3>
+                <button class="modal-close" id="close-folder-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="folder-name-input">Nama Folder</label>
+                    <input type="text" id="folder-name-input" class="modal-input" placeholder="Masukkan nama folder">
+                </div>
+                <p id="folder-error" class="error-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-folder-btn" class="btn secondary">Batal</button>
+                <button id="confirm-folder-btn" class="btn primary">Buat Folder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Exam Modal -->
+    <div id="create-exam-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Buat Ujian Baru</h3>
+                <button class="modal-close" id="close-exam-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="exam-title-input">Judul Ujian</label>
+                    <input type="text" id="exam-title-input" class="modal-input" placeholder="Contoh: UTS Semester 1 - Informatika">
+                </div>
+                <div class="form-group">
+                    <label for="exam-description-input">Deskripsi</label>
+                    <textarea id="exam-description-input" class="modal-input" rows="3" placeholder="Deskripsi ujian (opsional)"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="exam-duration-input">Durasi (menit)</label>
+                        <input type="number" id="exam-duration-input" class="modal-input" min="5" max="180" value="60">
+                    </div>
+                    <div class="form-group">
+                        <label for="exam-date-input">Tanggal</label>
+                        <input type="date" id="exam-date-input" class="modal-input">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Kelas yang Diujikan</label>
+                    <div class="class-selection-container">
+                        <div class="class-selection-header">
+                            <span>Daftar Kelas</span>
+                            <button id="add-class-btn" class="btn-icon">
+                                <i class="add-class-btn"></i> Tambah Kelas
+                            </button>
+                            <button id="refresh-classes-btn" class="btn-icon" title="Refresh Daftar Kelas">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <div class="class-list" id="class-checkboxes">
+                            <!-- Classes will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+                <p id="exam-error" class="error-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-exam-btn" class="btn secondary">Batal</button>
+                <button id="save-exam-btn" class="btn primary">Simpan & Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div id="add-class-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Tambah Kelas Baru</h3>
+                <button class="modal-close" id="close-add-class-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="new-class-name">Nama Kelas</label>
+                    <input type="text" id="new-class-name" class="modal-input" placeholder="Contoh: 10 TKJ 1">
+                </div>
+                <p id="class-error" class="error-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-add-class-btn" class="btn secondary">Batal</button>
+                <button id="confirm-add-class-btn" class="btn primary">Simpan Kelas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Class Confirmation Modal -->
+    <div id="delete-class-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fa fa-trash-alt" aria-hidden="true"></i> Hapus Kelas
+                </h3>
+                <button class="modal-close" id="close-delete-class-modal">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="delete-class-message">Apakah Anda yakin ingin menghapus kelas ini?</p>
+                <p class="warning-text">
+                    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> 
+                    Semua ujian yang terkait dengan kelas ini juga akan dihapus!
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-delete-class-btn" class="btn secondary">Batal</button>
+                <button id="confirm-delete-class-btn" class="btn danger">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Question Modal -->
+    <div id="add-question-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Tambah Soal</h3>
+                <button class="modal-close" id="close-question-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <button class="tab-btn active" data-type="multiple-choice">
+                        <i class="fas fa-list-ul"></i> Pilihan Ganda
+                    </button>
+                    <button class="tab-btn" data-type="essay">
+                        <i class="fas fa-pen"></i> Essay
+                    </button>
+                </div>
+                
+                <div id="multiple-choice-form" style="display: block;">
+                    <div class="form-group">
+                        <label for="mc-question">Pertanyaan</label>
+                        <textarea id="mc-question" class="modal-input" rows="3" placeholder="Masukkan pertanyaan"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Pilihan Jawaban</label>
+                        <div class="options-container">
+                            <div class="option-item">
+                                <input type="radio" name="correct-answer" value="0" checked>
+                                <input type="text" class="option-input" placeholder="Pilihan A">
+                            </div>
+                            <div class="option-item">
+                                <input type="radio" name="correct-answer" value="1">
+                                <input type="text" class="option-input" placeholder="Pilihan B">
+                            </div>
+                            <div class="option-item">
+                                <input type="radio" name="correct-answer" value="2">
+                                <input type="text" class="option-input" placeholder="Pilihan C">
+                            </div>
+                            <div class="option-item">
+                                <input type="radio" name="correct-answer" value="3">
+                                <input type="text" class="option-input" placeholder="Pilihan D">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="mc-points">Poin</label>
+                        <input type="number" id="mc-points" class="modal-input" min="1" value="5">
+                    </div>
+                </div>
+                
+                <div id="essay-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="essay-question">Pertanyaan</label>
+                        <textarea id="essay-question" class="modal-input" rows="3" placeholder="Masukkan pertanyaan essay"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="essay-points">Poin</label>
+                        <input type="number" id="essay-points" class="modal-input" min="1" value="10">
+                    </div>
+                </div>
+                
+                <p id="question-error" class="error-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-question-btn" class="btn secondary">Batal</button>
+                <button id="save-question-btn" class="btn primary">Simpan Soal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Preview Modal -->
+    <div id="exam-preview-modal" class="modal wide-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-eye"></i> Preview Ujian</h3>
+                <button class="modal-close" id="close-preview-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="exam-info">
+                    <h4 id="preview-exam-title">Judul Ujian</h4>
+                    <p id="preview-exam-description">Deskripsi ujian</p>
+                </div>
+                
+                <div id="preview-questions">
+                    <!-- Questions will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="back-to-edit-btn" class="btn secondary">
+                    <i class="fas fa-arrow-left"></i> Tambah Soal Lain
+                </button>
+                <button id="publish-exam-btn" class="btn primary">
+                    <i class="fas fa-check"></i> Publikasikan Ujian
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Answers Modal -->
+    <div id="answers-modal" class="modal wide-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-alt"></i> Jawaban Siswa</h3>
+                <button class="modal-close" id="close-answers-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="student-info">
+                    <h4 id="student-name-display">Nama Siswa</h4>
+                    <p id="student-class-display">Kelas: -</p>
+                    <p id="student-score-display">Nilai: -</p>
+                </div>
+                
+                <div class="student-answers" id="student-answers">
+                    <!-- Answers will be loaded here -->
+                </div>
+                
+                <div class="grading-section">
+                    <h4><i class="fas fa-check-circle"></i> Penilaian</h4>
+                    <div class="form-group">
+                        <label for="total-score">Total Nilai</label>
+                        <input type="number" id="total-score" class="modal-input" min="0" max="100" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="teacher-comment">Komentar</label>
+                        <textarea id="teacher-comment" class="modal-input" rows="3" placeholder="Masukkan komentar (opsional)"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-grading-btn" class="btn secondary">Tutup</button>
+                <button id="save-grade-btn" class="btn primary">Simpan Nilai</button>
+                <button id="delete-answers-btn" class="btn danger">
+                    <i class="fas fa-trash"></i> Hapus Jawaban
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="export-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-export"></i> Ekspor Nilai</h3>
+                <button class="modal-close" id="close-export-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="export-format">Format Ekspor</label>
+                    <select id="export-format" class="modal-input">
+                        <option value="csv">CSV</option>
+                        <option value="excel">Excel</option>
+                        <option value="pdf">PDF</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="export-filename">Nama File</label>
+                    <input type="text" id="export-filename" class="modal-input" placeholder="Nama file ekspor">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-export-btn" class="btn secondary">Batal</button>
+                <button id="confirm-export-btn" class="btn primary">Ekspor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div id="rename-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="rename-modal-title"><i class="fas fa-edit"></i> Ubah Nama</h3>
+                <button class="modal-close" id="close-rename-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="rename-input" placeholder="Masukkan nama baru" class="modal-input">
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-rename-btn" class="btn secondary">Batal</button>
+                <button id="confirm-rename-btn" class="btn primary">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cog"></i> Pengaturan</h3>
+                <button class="modal-close" id="close-settings-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="current-password">Password Saat Ini</label>
+                    <input type="password" id="current-password" class="modal-input" placeholder="Masukkan password saat ini">
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Password Baru</label>
+                    <input type="password" id="new-password" class="modal-input" placeholder="Masukkan password baru">
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Konfirmasi Password Baru</label>
+                    <input type="password" id="confirm-password" class="modal-input" placeholder="Konfirmasi password baru">
+                </div>
+                <p id="settings-error" class="error-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-settings-btn" class="btn secondary">Batal</button>
+                <button id="save-settings-btn" class="btn primary">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+<!-- Move Items Modal -->
+<div id="move-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-arrows-alt"></i> Pindahkan Item</h3>
+            <button class="modal-close" id="close-move-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="folder-browser">
+                <div class="folder-browser-header">
+                    <button class="btn-icon" id="move-go-up">
+                        <i class="fas fa-level-up-alt"></i>
+                    </button>
+                    <div class="current-path" id="move-current-path">/</div>
+                </div>
+                <div class="folder-list" id="move-folder-list">
+                    <!-- Folders will be loaded here -->
+                </div>
+            </div>
+            <p id="move-error" class="error-message"></p>
+        </div>
+        <div class="modal-footer">
+            <button id="cancel-move-btn" class="btn secondary">Batal</button>
+            <button id="confirm-move-btn" class="btn primary">Pindahkan</button>
+        </div>
+    </div>
+</div>
+
+    <!-- App Scripts -->
+    <script src="jees/config.js"></script>
+    <script src="jees/app_guru.js"></script>
+    <script src="jees/exam_teacher.js"></script>
+    <script src="jees/script.js"></script>
+    <script src="jees/preview.js"></script>
+    
+    <script>
+            // Navigation between sections
+            const tugasBtn = document.getElementById('tugas-btn');
+            const soalBtn = document.getElementById('soal-btn');
+            const nilaiBtn = document.getElementById('nilai-btn');
+            const tugasSection = document.getElementById('tugas-section');
+            const soalSection = document.getElementById('soal-section');
+            const nilaiSection = document.getElementById('nilai-section');
+
+            if (tugasBtn && soalBtn && nilaiBtn) {
+                tugasBtn.addEventListener('click', () => {
+                    tugasSection.style.display = 'block';
+                    soalSection.style.display = 'none';
+                    nilaiSection.style.display = 'none';
+                    tugasBtn.classList.add('active');
+                    soalBtn.classList.remove('active');
+                    nilaiBtn.classList.remove('active');
+                });
+
+                soalBtn.addEventListener('click', () => {
+                    tugasSection.style.display = 'none';
+                    soalSection.style.display = 'block';
+                    nilaiSection.style.display = 'none';
+                    soalBtn.classList.add('active');
+                    tugasBtn.classList.remove('active');
+                    nilaiBtn.classList.remove('active');
+                    loadTeacherExams();
+                });
+
+                nilaiBtn.addEventListener('click', () => {
+                    tugasSection.style.display = 'none';
+                    soalSection.style.display = 'none';
+                    nilaiSection.style.display = 'block';
+                    nilaiBtn.classList.add('active');
+                    tugasBtn.classList.remove('active');
+                    soalBtn.classList.remove('active');
+                    loadExamFilterOptions();
+                });
+            }
+
+            // Settings button
+            const settingsBtn = document.getElementById('settings-btn');
+            if (settingsBtn) {
+                settingsBtn.addEventListener('click', () => {
+                    document.getElementById('settings-modal').style.display = 'block';
+                });
+            }
+
+            // Set up settings modal
+            const settingsModal = document.getElementById('settings-modal');
+            if (settingsModal) {
+                document.getElementById('close-settings-modal').addEventListener('click', () => {
+                    settingsModal.style.display = 'none';
+                });
+                
+                document.getElementById('cancel-settings-btn').addEventListener('click', () => {
+                    settingsModal.style.display = 'none';
+                });
+                
+                document.getElementById('save-settings-btn').addEventListener('click', async () => {
+                    const currentPassword = document.getElementById('current-password').value;
+                    const newPassword = document.getElementById('new-password').value;
+                    const confirmPassword = document.getElementById('confirm-password').value;
+                    const errorElement = document.getElementById('settings-error');
+                    
+                    if (!currentPassword || !newPassword || !confirmPassword) {
+                        errorElement.textContent = 'Harap isi semua field';
+                        return;
+                    }
+                    
+                    if (newPassword !== confirmPassword) {
+                        errorElement.textContent = 'Password baru tidak cocok';
+                        return;
+                    }
+                    
+                    try {
+                        // Verify current password
+                        const { data, error } = await supabase
+                            .from('teacher_passwords')
+                            .select('*')
+                            .eq('password', currentPassword)
+                            .single();
+                            
+                        if (error || !data) {
+                            throw new Error('Password saat ini salah');
+                        }
+                        
+                        // Update password
+                        const { error: updateError } = await supabase
+                            .from('teacher_passwords')
+                            .update({ password: newPassword })
+                            .eq('password', currentPassword);
+                            
+                        if (updateError) throw updateError;
+                        
+                        showNotification('Password berhasil diubah', 'success');
+                        settingsModal.style.display = 'none';
+                        
+                    } catch (error) {
+                        console.error('Error changing password:', error);
+                        errorElement.textContent = error.message;
+                    }
+                });
+            }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            const modals = ['create-folder-modal', 'create-exam-modal', 'add-class-modal', 
+                          'add-question-modal', 'exam-preview-modal', 'answers-modal', 
+                          'export-modal', 'settings-modal'];
+            
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal && e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

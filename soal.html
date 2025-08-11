@@ -1,0 +1,175 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UJIAN - SMK Veteran 1 Sukoharjo</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="gambar/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="gambar/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="gambar/favicon-16x16.png">
+    <link rel="manifest" href="gambar/site.webmanifest">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/link-preview-js@2.1.15/dist/linkPreview.min.js"></script>
+    <style>
+        /* Tambahkan style untuk mencegah seleksi teks */
+        .exam-questions {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        /* Style untuk overlay peringatan */
+        .copy-warning {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--danger);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: none;
+            animation: fadeInOut 2s ease-in-out;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        /* Style untuk disable right click */
+        body.disable-context-menu {
+            -webkit-touch-callout: none;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="exam-header">
+        <div class="exam-header-container">
+            <div class="exam-header-left">
+                <img src="gambar/favicon-32x32.png" alt="School Logo" class="school-logo-small">
+                <div class="exam-header-info">
+                    <h2 id="exam-title">Ujian</h2>
+                    <p id="student-info-display"></p>
+                </div>
+            </div>
+            <div class="exam-header-right">
+                <div id="timer">00:00:00</div>
+                <div id="question-counter">Soal 1 dari 0</div>
+            </div>
+        </div>
+    </div>
+
+    <main class="exam-content">
+        <div id="exam-questions" class="exam-questions">
+            <!-- Questions will be loaded here -->
+        </div>
+        
+        <div class="exam-navigation">
+            <button id="prev-question-btn" class="btn secondary">
+                <i class="fas fa-arrow-left"></i> Sebelumnya
+            </button>
+            <button id="next-question-btn" class="btn primary">
+                Selanjutnya <i class="fas fa-arrow-right"></i>
+            </button>
+            <button id="submit-exam-btn" class="btn danger">
+                <i class="fas fa-paper-plane"></i> Kirim Ujian
+            </button>
+        </div>
+    </main>
+
+    <!-- Submit Confirmation Modal -->
+    <div id="submit-confirm-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Konfirmasi Pengumpulan</h3>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin mengumpulkan ujian ini?</p>
+                <p id="unanswered-count"></p>
+                <p>Anda tidak dapat mengubah jawaban setelah mengumpulkan.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-submit-btn" class="btn secondary">Batal</button>
+                <button id="confirm-submit-btn" class="btn danger">Ya, Kirim</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Complete Modal -->
+    <div id="exam-complete-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-circle"></i> Ujian Selesai</h3>
+            </div>
+            <div class="modal-body">
+                <p>Ujian Anda telah berhasil dikumpulkan.</p>
+                <p>Nilai akan tersedia setelah diperiksa oleh guru.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="back-to-exams-btn" class="btn primary">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Daftar Ujian
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="copy-warning" class="copy-warning">
+        <i class="fas fa-exclamation-triangle"></i> Ups! No copy–copy soal, yaa 😜
+    </div>
+    <!-- App Scripts -->
+    <script src="jees/config.js"></script>
+    <script src="jees/exam_student.js"></script>
+    <script src="jees/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Nonaktifkan context menu (klik kanan)
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                showCopyWarning();
+            });
+            
+            // Nonaktifkan pintasan keyboard (Ctrl+C, Ctrl+A, dll)
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+C, Ctrl+X, Ctrl+A
+                if (e.ctrlKey && (e.keyCode === 67 || e.keyCode === 88 || e.keyCode === 65)) {
+                    e.preventDefault();
+                    showCopyWarning();
+                }
+                
+                // Block print screen key
+                if (e.keyCode === 44) { // Print Screen key
+                    e.preventDefault();
+                    showCopyWarning();
+                }
+            });
+            
+            // Nonaktifkan drag dan drop teks
+            document.addEventListener('dragstart', function(e) {
+                if (e.target.classList.contains('exam-question') || 
+                    e.target.closest('.exam-question')) {
+                    e.preventDefault();
+                    showCopyWarning();
+                }
+            });
+            
+            // Fungsi untuk menampilkan peringatan
+            function showCopyWarning() {
+                const warning = document.getElementById('copy-warning');
+                warning.style.display = 'block';
+                
+                // Sembunyikan setelah 2 detik
+                setTimeout(() => {
+                    warning.style.display = 'none';
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4361ee">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-startup-image" href="gambar/apple-touch-icon.png">
+    <title>MATERI & TUGAS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="gambar/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="gambar/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="gambar/favicon-16x16.png">
+    <link rel="manifest" href="gambar/site.webmanifest">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/link-preview-js@2.1.15/dist/linkPreview.min.js"></script>
+</head>
+<body class="dark-mode">
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-content">
+            <div class="loading-animation">
+                <div class="loading-student"></div>
+                <div class="loading-book"></div>
+                <div class="loading-pencil"></div>
+            </div>
+            <h2 class="loading-text">loading...</h2>
+            <p class="loading-subtext">SMK Veteran 1 Sukoharjo</p>
+            <div class="loading-progress">
+                <div class="loading-progress-bar" id="loading-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="school-theme-bg"></div>
+    
+    <!-- School-themed decorative elements -->
+    <i class="fas fa-pencil-alt school-decoration pencil"></i>
+    <i class="fas fa-book school-decoration book"></i>
+    
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <img src="gambar/favicon-32x32.png" alt="School Logo" class="school-logo">
+                <div class="logo-text">
+                    <span class="school-name">SMK Veteran 1 Sukoharjo</span>
+                    <span class="school-motto">Bersatu Maju Nomer 1</span>
+                </div>
+            </div>
+            
+            <h2 class="login-title">Zona Materi, Tugas Dan Soal</h2>
+            <p class="login-subtitle">Tahun Ajaran 2025/2026</p>
+            
+            <div class="login-options">
+                <button id="student-btn" class="btn school-primary">
+                    <i class="fas fa-user-graduate school-icon"></i> Masuk sebagai Siswa
+                </button>
+                
+                <button id="teacher-btn" class="btn school-secondary">
+                    <i class="fas fa-chalkboard-teacher school-icon"></i> Masuk sebagai Guru
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Password Modal -->
+    <div id="password-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-lock"></i> Masukkan Password Guru</h3>
+                <button class="modal-close" id="close-password-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="password" id="password-input" placeholder="Password" class="modal-input">
+                <p id="password-error" class="error-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-password-btn" class="btn secondary">Batal</button>
+                <button id="confirm-password-btn" class="btn primary">Masuk</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Scripts -->
+    <script src="jees/config.js"></script>
+    <script src="jees/script.js"></script>
+    <script src="jees/preview.js"></script>
+
+    <!-- Loading Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingBar = document.getElementById('loading-bar');
+            const loadingScreen = document.getElementById('loading-screen');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 60;
+                if (progress > 100) progress = 100;
+                loadingBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        loadingScreen.style.opacity = '0';
+                        loadingScreen.style.visibility = 'hidden';
+                    }, 500);
+                }
+            }, 200);
+            
+            // Add school-themed confetti on button click
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const confetti = document.createElement('div');
+                    confetti.innerHTML = '<i class="fas fa-star"></i>';
+                    confetti.style.position = 'fixed';
+                    confetti.style.color = getRandomColor();
+                    confetti.style.left = Math.random() * window.innerWidth + 'px';
+                    confetti.style.top = Math.random() * window.innerHeight + 'px';
+                    confetti.style.fontSize = (Math.random() * 20 + 10) + 'px';
+                    confetti.style.opacity = '0.8';
+                    confetti.style.animation = 'float 3s ease-in-out forwards';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                });
+            });
+            
+            function getRandomColor() {
+                const colors = ['#1a56a7', '#e74c3c', '#f39c12', '#27ae60', '#3498db'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+        });
+        
+    </script>
+</body>
+</html>
